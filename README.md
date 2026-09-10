@@ -31,7 +31,7 @@ My background combines operational defensive security (**Security Operations Cen
 | **Enterprise Networking** | Cisco IOS, OSPFv2, HSRP Gateway Redundancy, LACP, 802.1Q VLANs, GRE Tunnels, Extended ACLs, NAT/PAT |
 | **Perimeter Security** | **OPNsense UTM**, Inline IPS (Suricata / Netmap), Web Proxy & Antivirus (ClamAV/C-ICAP), DNSBL Filtering, OpenVPN |
 | **Systems & IaC** | **PowerShell 7 / 5.1**, Active Directory Domain Services, GPO Security Hardening, NTFS / `icacls`, Hyper-V Gen 2 IaC |
-| **AppSec & AI Security** | OWASP Top 10, Local LLMs (**LM Studio, Open WebUI, Ollama**), RAG Pipelines (ChromaDB), Vulnerability RCA |
+| **AppSec & Penetration Testing** | **OWASP WSTG v4.2**, Burp Suite, SQLMap, XSStrike, Gobuster, Nikto, Vulnerability RCA, Local LLMs (LM Studio, Open WebUI) |
 
 ---
 
@@ -46,6 +46,7 @@ Each project directory below provides a structured case study (**Objective → M
 | **03** | [**IoT Security Assessment & Penetration Testing**](./03-iot-security-assessment/) | IoT / Hardening | Cracked camera RTSP credentials in 78 seconds (CVSS 9.1); intercepted unauthorized AWS telemetry via Cisco SPAN; mitigated threat via 3-VLAN segmentation and ACLs. | [Report & SPAN Config](./03-iot-security-assessment/) |
 | **04** | [**PowerShell Infrastructure Automation & IaC**](./04-powershell-infrastructure-automation/) | Systems / Automation | Production-grade automation scripts for AD user/group provisioning, CIS GPO baselines, `icacls` permission hardening, DHCP deployment, and Gen 2 Hyper-V multi-disk arrays. | [PowerShell Scripts](./04-powershell-infrastructure-automation/) |
 | **05** | [**Enterprise Dual-Campus Network & UTM Firewall**](./05-enterprise-network-architecture/) | Network / Perimeter | Designed dual-campus network (HQ Borås & Branch Göteborg) with OSPF, GRE tunnels, and HSRP redundancy. Deployed OPNsense UTM firewall with inline IPS and proxy filtering. | [Network & UTM Guides](./05-enterprise-network-architecture/) |
+| **06** | [**Web Application Penetration Testing (OWASP WSTG)**](./06-web-application-penetration-testing/) | Web AppSec / Pentest | Executed OWASP WSTG evaluation against Decidim (Ruby on Rails/Puma) in Hyper-V sandbox. Identified stacktrace leakage & rate limiting gaps; validated ORM & template defenses. | [36-Page Pentest Report](./06-web-application-penetration-testing/) |
 
 ---
 
@@ -76,10 +77,14 @@ cybersecurity-projects/
 │   ├── Deploy-HyperV-VM.ps1                   # Gen 2 Hyper-V VM IaC & 6-disk database array
 │   └── HyperV_VM_Automation_Lab_Guide.pdf     # Infrastructure implementation reference
 │
-└── 05-enterprise-network-architecture/        # Module 05: Cisco campus & OPNsense UTM
-    ├── README.md                              # Dual-campus routing, switching & UTM blueprint
-    ├── MultiSite_Enterprise_Network_Design.pdf # Enterprise network engineering design
-    └── OPNsense_UTM_Firewall_Implementation.pdf # Hardware UTM setup & threat management
+├── 05-enterprise-network-architecture/        # Module 05: Cisco campus & OPNsense UTM
+│   ├── README.md                              # Dual-campus routing, switching & UTM blueprint
+│   ├── MultiSite_Enterprise_Network_Design.pdf # Enterprise network engineering design
+│   └── OPNsense_UTM_Firewall_Implementation.pdf # Hardware UTM setup & threat management
+│
+└── 06-web-application-penetration-testing/    # Module 06: OWASP WSTG web penetration testing
+    ├── README.md                              # Assessment summary, methodology & test matrix
+    └── Web_Application_Penetration_Testing_Report.pdf # Complete 36-page penetration test report
 ```
 
 ---
