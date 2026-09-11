@@ -91,52 +91,79 @@
 
 [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Medium')]
 param (
+    # Parameter: Mode
+    # Execution workflow mode: 'Export', 'Import', 'ProvisionRBAC', 'ConfigureGPO', 'HardenNTFS', or 'All'
+    # Default is 'All', which sequentially provisions identity, storage, and GPO baselines
     [Parameter(Mandatory = $false, HelpMessage = "Execution workflow mode.")]
     [ValidateSet('Export', 'Import', 'ProvisionRBAC', 'ConfigureGPO', 'HardenNTFS', 'All')]
     [string]$Mode = 'All',
 
+    # Parameter: CsvPath
+    # File system path to the CSV file used for exporting or importing Active Directory identity objects
     [Parameter(Mandatory = $false, HelpMessage = "Filesystem path for CSV export or import.")]
     [ValidateNotNullOrEmpty()]
     [string]$CsvPath = "C:\AutomatedDeployments\AD_Users_and_Groups.csv",
 
+    # Parameter: BaseSharePath
+    # Root local directory where departmental storage folders are created on the file server
     [Parameter(Mandatory = $false, HelpMessage = "Base filesystem path for departmental shares.")]
     [ValidateNotNullOrEmpty()]
     [string]$BaseSharePath = "C:\Shares\Departmental",
 
+    # Parameter: DomainName
+    # Fully Qualified Domain Name (FQDN) of the Active Directory domain (e.g., 'corp.enterprise.local')
     [Parameter(Mandatory = $false, HelpMessage = "Fully Qualified Domain Name of Active Directory.")]
     [ValidateNotNullOrEmpty()]
     [string]$DomainName = "corp.enterprise.local",
 
+    # Parameter: DomainNetbiosName
+    # NetBIOS short name of the domain used for legacy client authentication (e.g., 'CORP')
     [Parameter(Mandatory = $false, HelpMessage = "NetBIOS name of the domain.")]
     [ValidateNotNullOrEmpty()]
     [string]$DomainNetbiosName = "CORP",
 
+    # Parameter: DefaultPassword
+    # Optional SecureString password assigned to newly created user accounts during import
+    # If not provided, a cryptographically secure 16-character random password is generated automatically
     [Parameter(Mandatory = $false, HelpMessage = "Initial SecureString password for new user accounts.")]
     [System.Security.SecureString]$DefaultPassword,
 
+    # Parameter: GpoName
+    # Name of the security baseline Group Policy Object linked to the root of the domain
     [Parameter(Mandatory = $false, HelpMessage = "Name of security Group Policy Object.")]
     [ValidateNotNullOrEmpty()]
     [string]$GpoName = "Corporate_Security_Baseline",
 
+    # Parameter: MinimumPasswordLength
+    # Minimum password length enforced by the security GPO baseline (default: 14 characters)
     [Parameter(Mandatory = $false, HelpMessage = "Minimum password length enforced by GPO.")]
     [ValidateRange(8, 128)]
     [int]$MinimumPasswordLength = 14,
 
+    # Parameter: EnforceSecureLogonCAD
+    # Enforces the Ctrl+Alt+Del secure logon sequence (DisableCAD = 0) to thwart software keyloggers
     [Parameter(Mandatory = $false, HelpMessage = "Enforce Ctrl+Alt+Del secure logon sequence via GPO.")]
     [bool]$EnforceSecureLogonCAD = $true,
 
+    # Parameter: AccountLockoutThreshold
+    # Number of failed login attempts before an account is locked out against brute-force attacks (default: 5)
     [Parameter(Mandatory = $false, HelpMessage = "Number of invalid logon attempts before account lockout.")]
     [ValidateRange(0, 50)]
     [int]$AccountLockoutThreshold = 5,
 
+    # Parameter: ConfidentialProjectLead
+    # Username of the project manager granted Full Control on confidential project storage (Project Alpha)
     [Parameter(Mandatory = $false, HelpMessage = "Account designated as lead for confidential projects.")]
     [ValidateNotNullOrEmpty()]
     [string]$ConfidentialProjectLead = "Jacob.Hoover"
 )
 
+# Enforce strict parsing rules and terminate on unhandled script exceptions
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
+# Function: Write-LogMessage
+# Formats log output with an ISO timestamp, severity level, and distinctive terminal coloring
 function Write-LogMessage {
     [CmdletBinding()]
     param (
@@ -153,38 +180,49 @@ function Write-LogMessage {
     Write-Host "[$timestamp] [$Level] $Message" -ForegroundColor $colorMap[$Level]
 }
 
+# Function: Test-AdministratorPrivileges
+# Checks whether the active PowerShell session has elevated administrative privileges
 function Test-AdministratorPrivileges {
     $currentIdentity = [Security.Principal.WindowsIdentity]::GetCurrent()
     $principal = New-Object Security.Principal.WindowsPrincipal($currentIdentity)
     return $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 }
 
+# Function: New-SecureRandomPassword
+# Generates a cryptographically strong random password conforming to enterprise complexity standards
+# Uses System.Security.Cryptography.RandomNumberGenerator to avoid predictable pseudo-random seeds
 function New-SecureRandomPassword {
     [CmdletBinding()]
     param ([int]$Length = 16)
+
+    # Define discrete character pools (excluding easily confused glyphs like 0/O, 1/l/I)
     $charSets = @(
-        'ABCDEFGHJKLMNPQRSTUVWXYZ', # Uppercase without ambiguous I, O
-        'abcdefghijkmnopqrstuvwxyz', # Lowercase without ambiguous l
-        '23456789',                  # Numbers without ambiguous 0, 1
-        '!@#$%^&*()-_=+[]{}'         # Symbols
+        'ABCDEFGHJKLMNPQRSTUVWXYZ', # Uppercase letters
+        'abcdefghijkmnopqrstuvwxyz', # Lowercase letters
+        '23456789',                  # Numeric digits
+        '!@#$%^&*()-_=+[]{}'         # Special symbols
     )
+
+    # Initialize cryptographically secure random number generator
     $rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
     $buffer = New-Object byte[] ($Length)
     $rng.GetBytes($buffer)
 
     $chars = New-Object char[] ($Length)
-    # Ensure at least one character from each character set
+
+    # Guarantee at least one character from each character category
     for ($i = 0; $i -lt $charSets.Count; $i++) {
         $set = $charSets[$i]
         $chars[$i] = $set[$buffer[$i] % $set.Length]
     }
-    # Fill remainder from combined character set
+
+    # Populate remaining password positions from combined character universe
     $allChars = -join $charSets
     for ($i = $charSets.Count; $i -lt $Length; $i++) {
         $chars[$i] = $allChars[$buffer[$i] % $allChars.Length]
     }
 
-    # Fisher-Yates shuffle
+    # Perform Fisher-Yates array shuffle to eliminate position predictability
     for ($i = $Length - 1; $i -gt 0; $i--) {
         $j = $buffer[$i] % ($i + 1)
         $temp = $chars[$i]
@@ -192,16 +230,22 @@ function New-SecureRandomPassword {
         $chars[$j] = $temp
     }
 
+    # Convert plain-text string into an encrypted SecureString object
     $plain = -join $chars
     return (ConvertTo-SecureString -String $plain -AsPlainText -Force)
 }
 
-# --- Module Verification ---
+# ==============================================================================
+# PREREQUISITE & MODULE VERIFICATION
+# ==============================================================================
 Write-LogMessage -Message "Validating required PowerShell modules and administrative context..." -Level 'INFO'
+
+# Step 1: Check administrative token elevation
 if (-not (Test-AdministratorPrivileges)) {
     Write-LogMessage -Message "Elevated session recommended. Continuing with current user tokens." -Level 'WARNING'
 }
 
+# Step 2: Check availability of required ActiveDirectory and GroupPolicy RSAT modules
 $adModuleAvailable = $null -ne (Get-Module -ListAvailable -Name ActiveDirectory)
 $gpoModuleAvailable = $null -ne (Get-Module -ListAvailable -Name GroupPolicy)
 
@@ -219,7 +263,7 @@ if ($gpoModuleAvailable) {
     Write-LogMessage -Message "GroupPolicy module is not installed. RSAT-GPO tools required for GPO cmdlets." -Level 'WARNING'
 }
 
-# Results tracking
+# Step 3: Initialize structured execution report for audit trails
 $executionReport = [PSCustomObject]@{
     Mode             = $Mode
     Timestamp        = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss")
@@ -231,8 +275,9 @@ $executionReport = [PSCustomObject]@{
 }
 
 # ==============================================================================
-# SUBROUTINE: Export Active Directory Users & Groups
+# SUBROUTINE: EXPORT ACTIVE DIRECTORY USERS & SECURITY GROUPS
 # ==============================================================================
+# Queries domain users, resolves nested group memberships, and exports a clean CSV
 function Invoke-ADIdentityExport {
     [CmdletBinding(SupportsShouldProcess = $true)]
     param (
@@ -244,25 +289,29 @@ function Invoke-ADIdentityExport {
         throw "Cannot execute Export: ActiveDirectory module is missing."
     }
 
+    # Create destination folder if missing
     $parentDir = Split-Path -Parent $DestinationPath
     if (-not [string]::IsNullOrEmpty($parentDir) -and -not (Test-Path $parentDir)) {
         New-Item -Path $parentDir -ItemType Directory -Force | Out-Null
     }
 
     try {
+        # Define user object properties to query from AD DS database
         $userProperties = @("SamAccountName", "GivenName", "Surname", "Department", "UserPrincipalName", "Enabled")
         Write-LogMessage -Message "Querying all Active Directory user accounts..." -Level 'INFO'
         $users = Get-ADUser -Filter * -Property $userProperties
 
+        # Collect user data and security group memberships
         $exportData = [System.Collections.Generic.List[PSCustomObject]]::new()
         foreach ($user in $users) {
-            # Retrieve direct and indirect group memberships
+            # Retrieve direct and indirect group memberships via token resolution
             $groups = try {
                 (Get-ADPrincipalGroupMembership -Identity $user.SamAccountName -ErrorAction Stop | Select-Object -ExpandProperty Name) -join ", "
             } catch {
                 "Domain Users"
             }
 
+            # Build standardized identity record
             $exportData.Add([PSCustomObject]@{
                 SamAccountName    = $user.SamAccountName
                 GivenName         = $user.GivenName
@@ -274,6 +323,7 @@ function Invoke-ADIdentityExport {
             })
         }
 
+        # Export list of objects to CSV without type information metadata
         if ($PSCmdlet.ShouldProcess($DestinationPath, "Export $($exportData.Count) identity records to CSV")) {
             $exportData | Export-Csv -Path $DestinationPath -NoTypeInformation -Encoding UTF8
             Write-LogMessage -Message "Export complete. $($exportData.Count) records written to: $DestinationPath" -Level 'SUCCESS'
@@ -287,8 +337,9 @@ function Invoke-ADIdentityExport {
 }
 
 # ==============================================================================
-# SUBROUTINE: Import Users, Security Groups & RBAC Assignment
+# SUBROUTINE: IMPORT USERS, SECURITY GROUPS & RBAC ASSIGNMENT
 # ==============================================================================
+# Reads CSV roster, creates missing security groups, creates user accounts, and assigns memberships
 function Invoke-ADIdentityImport {
     [CmdletBinding(SupportsShouldProcess = $true)]
     param (
@@ -306,13 +357,14 @@ function Invoke-ADIdentityImport {
     }
 
     try {
+        # Read user records from CSV file
         $csvRecords = Import-Csv -Path $SourceCsvPath
         if ($null -eq $csvRecords -or $csvRecords.Count -eq 0) {
             Write-LogMessage -Message "CSV file is empty. Nothing to process." -Level 'WARNING'
             return
         }
 
-        # Validate CSV Schema
+        # Validate mandatory CSV schema headers to guarantee integrity
         $firstRecord = $csvRecords[0]
         $requiredColumns = @('SamAccountName', 'GivenName', 'Surname')
         foreach ($col in $requiredColumns) {
@@ -322,20 +374,23 @@ function Invoke-ADIdentityImport {
         }
         Write-LogMessage -Message "CSV schema validated successfully. Total records to ingest: $($csvRecords.Count)" -Level 'SUCCESS'
 
+        # Maintain HashSet of created groups to prevent redundant AD queries
         $createdGroups = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
 
         foreach ($record in $csvRecords) {
+            # Sanitize and extract user fields
             $sam = $record.SamAccountName.Trim()
             $given = $record.GivenName.Trim()
             $surname = $record.Surname.Trim()
             $dept = if ($record.PSObject.Properties.Name -contains 'Department' -and -not [string]::IsNullOrWhiteSpace($record.Department)) { $record.Department.Trim() } else { "General" }
+            # Parse comma-delimited group memberships
             $groupList = if ($record.PSObject.Properties.Name -contains 'Groups' -and -not [string]::IsNullOrWhiteSpace($record.Groups)) {
                 @($record.Groups -split ',\s*' | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
             } else {
                 @("Employees")
             }
 
-            # 1. Ensure Groups Exist
+            # Step 1: Ensure all required Global Security Groups exist in Active Directory
             foreach ($grp in $groupList) {
                 if (-not $createdGroups.Contains($grp)) {
                     $existingGroup = Get-ADGroup -Filter "Name -eq '$grp'" -ErrorAction SilentlyContinue
@@ -353,9 +408,10 @@ function Invoke-ADIdentityImport {
                 }
             }
 
-            # 2. Check and Provision User Account
+            # Step 2: Check if user already exists; create new account if absent
             $adUser = Get-ADUser -Filter "SamAccountName -eq '$sam'" -ErrorAction SilentlyContinue
             if ($null -eq $adUser) {
+                # Assign supplied SecureString password or generate cryptographically random password
                 $userPass = if ($null -ne $AccountPassword) { $AccountPassword } else { New-SecureRandomPassword }
                 $upn = "$sam@$TargetDomain"
 
@@ -378,16 +434,16 @@ function Invoke-ADIdentityImport {
                 Write-LogMessage -Message "Account '$sam' already exists. Updating group memberships." -Level 'INFO'
             }
 
-            # 3. Role-Based Group Membership Assignment
+            # Step 3: Assign user to each specified Role-Based Security Group
             foreach ($grp in $groupList) {
                 if ($PSCmdlet.ShouldProcess("User $sam -> Group $grp", "Assign Group Membership")) {
                     try {
                         Add-ADGroupMember -Identity $grp -Members $sam -ErrorAction Stop
                         Write-LogMessage -Message "Assigned user '$sam' to security group '$grp'." -Level 'INFO'
                     } catch {
-                        # Suppress error if user is already a member
+                        # Suppress error if account is already a member of the security group
                         if ($_ -notmatch "already a member") {
-                            Write-LogMessage -Message "Group assignment warning for $sam in $grp: $_" -Level 'WARNING'
+                            Write-LogMessage -Message "Group assignment warning for $sam in $($grp): $_" -Level 'WARNING'
                         }
                     }
                 }
@@ -402,8 +458,9 @@ function Invoke-ADIdentityImport {
 }
 
 # ==============================================================================
-# SUBROUTINE: Departmental Folder Structure & NTFS icacls Hardening
+# SUBROUTINE: DEPARTMENTAL FOLDER STRUCTURE & NTFS ICACLS HARDENING
 # ==============================================================================
+# Builds folder tree, sets up SMB file share, breaks inheritance, and enforces strict least-privilege ACLs
 function Invoke-NTFSHardening {
     [CmdletBinding(SupportsShouldProcess = $true)]
     param (
@@ -413,7 +470,7 @@ function Invoke-NTFSHardening {
 
     Write-LogMessage -Message "Hardening departmental file system tree at '$BasePath'..." -Level 'INFO'
 
-    # Folder-to-group access matrix adhering to Least Privilege
+    # Folder-to-group access matrix adhering to the Principle of Least Privilege
     $departmentalStructure = @{
         "Employees"   = "Employees"
         "Finance"     = "Finance"
@@ -422,6 +479,7 @@ function Invoke-NTFSHardening {
         "Alpha"       = "Alpha"
     }
 
+    # Create root departmental folder if it does not already exist
     if (-not (Test-Path $BasePath)) {
         if ($PSCmdlet.ShouldProcess($BasePath, "Create Base Departmental Root Directory")) {
             New-Item -Path $BasePath -ItemType Directory -Force | Out-Null
@@ -429,7 +487,7 @@ function Invoke-NTFSHardening {
         }
     }
 
-    # Share the root base directory via SMB for domain administration
+    # Provision administrative SMB network share for the root directory
     try {
         $existingShare = Get-SmbShare -Name "Departmental" -ErrorAction SilentlyContinue
         if ($null -eq $existingShare) {
@@ -442,10 +500,12 @@ function Invoke-NTFSHardening {
         Write-LogMessage -Message "SMB Share notice: $_" -Level 'INFO'
     }
 
+    # Iterate through departmental folders and apply hardened Access Control Lists (ACLs)
     foreach ($folder in $departmentalStructure.Keys) {
         $folderPath = Join-Path -Path $BasePath -ChildPath $folder
         $assignedGroup = $departmentalStructure[$folder]
 
+        # Create subfolder if missing
         if (-not (Test-Path $folderPath)) {
             if ($PSCmdlet.ShouldProcess($folderPath, "Create Folder")) {
                 New-Item -Path $folderPath -ItemType Directory -Force | Out-Null
@@ -455,28 +515,32 @@ function Invoke-NTFSHardening {
         if ($PSCmdlet.ShouldProcess($folderPath, "Harden NTFS Permissions with icacls")) {
             Write-LogMessage -Message "Applying defense-in-depth icacls ACLs to '$folder'..." -Level 'INFO'
 
-            # 1. Break inheritance and copy inherited permissions to explicit
-            # /inheritance:d converts inherited permissions to explicit ACEs and breaks inheritance
+            # Step 1: Break inheritance and convert inherited ACEs to explicit permissions
+            # /inheritance:d prevents higher-level drive permissions from bleeding into secure departmental shares
             & icacls "$folderPath" /inheritance:d | Out-Null
 
-            # 2. Strip broad default permissions (Domain Users, Users, Authenticated Users)
+            # Step 2: Strip broad default permissions (Users, Authenticated Users, Domain Users)
+            # This ensures unauthorized employees cannot read across other department shares
             & icacls "$folderPath" /remove:g "Users" "BUILTIN\Users" "Authenticated Users" "Domain Users" 2>&1 | Out-Null
 
-            # 3. Grant Full Control to Domain Admins and Local SYSTEM
+            # Step 3: Grant Full Control to Domain Admins and Local SYSTEM for administrative operations
+            # (OI)(CI) specifies Object Inherit and Container Inherit flags for child folders and files
             & icacls "$folderPath" /grant:r "Domain Admins:(OI)(CI)F" "NT AUTHORITY\SYSTEM:(OI)(CI)F" | Out-Null
 
             if ($folder -eq "Alpha") {
-                # Confidential Project Folder: Restrict to Alpha Team and Project Lead
+                # Confidential R&D Project Alpha: Isolated exclusively to project team and lead
                 Write-LogMessage -Message "Configuring confidential permissions on Project Alpha..." -Level 'INFO'
+                # Grant Modify permissions to the Alpha project team
                 & icacls "$folderPath" /grant:r "$($assignedGroup):(OI)(CI)M" | Out-Null
+                # Grant Full Control to the designated project lead
                 & icacls "$folderPath" /grant:r "$($ProjectLeadUser):(OI)(CI)F" | Out-Null
-                # Explicitly verify Executive is NOT granted access to confidential R&D Project Alpha
+                # Notice: Executive Management is deliberately excluded to maintain strict compartmentalization
             } else {
-                # Standard Departmental Folder
+                # Standard Departmental Folder:
                 # Grant Modify permissions to the designated departmental security group
                 & icacls "$folderPath" /grant:r "$($assignedGroup):(OI)(CI)M" | Out-Null
 
-                # Grant Full Control to Executive Management group across regular departments
+                # Grant Full Control to Executive Management across standard operational folders
                 & icacls "$folderPath" /grant:r "Executive:(OI)(CI)F" | Out-Null
             }
 
@@ -488,8 +552,9 @@ function Invoke-NTFSHardening {
 }
 
 # ==============================================================================
-# SUBROUTINE: Group Policy Security Baseline & Drive Mappings
+# SUBROUTINE: GROUP POLICY SECURITY BASELINE
 # ==============================================================================
+# Creates and links a domain-wide GPO configuring password policies, Ctrl+Alt+Del logon, and lockout
 function Invoke-GPOConfiguration {
     [CmdletBinding(SupportsShouldProcess = $true)]
     param (
@@ -507,7 +572,7 @@ function Invoke-GPOConfiguration {
     }
 
     try {
-        # 1. Create or retrieve GPO
+        # Step 1: Create new Group Policy Object if not already present
         $gpo = Get-GPO -Name $TargetGpoName -ErrorAction SilentlyContinue
         if ($null -eq $gpo) {
             if ($PSCmdlet.ShouldProcess($TargetGpoName, "Create Group Policy Object")) {
@@ -518,7 +583,7 @@ function Invoke-GPOConfiguration {
             Write-LogMessage -Message "GPO '$TargetGpoName' already exists." -Level 'INFO'
         }
 
-        # 2. Link GPO to Domain Root
+        # Step 2: Link the GPO to the Active Directory domain root
         $domainDn = "DC=" + ($TargetDomain -split '\.' -join ',DC=')
         if ($PSCmdlet.ShouldProcess($TargetDomain, "Link GPO '$TargetGpoName' to $domainDn")) {
             try {
@@ -533,7 +598,8 @@ function Invoke-GPOConfiguration {
             }
         }
 
-        # 3. Configure Secure Logon (DisableCAD = 0 requires Ctrl+Alt+Del)
+        # Step 3: Enforce Ctrl+Alt+Del secure logon sequence via registry policy (DisableCAD = 0)
+        # Prevents credential harvesting by unprivileged spoofed logon dialogs
         if ($EnforceCAD) {
             if ($PSCmdlet.ShouldProcess($TargetGpoName, "Set GP Registry: DisableCAD = 0 (Enforce Ctrl+Alt+Del)")) {
                 Set-GPRegistryValue -Name $TargetGpoName `
@@ -545,7 +611,7 @@ function Invoke-GPOConfiguration {
             }
         }
 
-        # 4. Configure Minimum Password Length via Netlogon registry key
+        # Step 4: Enforce Minimum Password Length via Netlogon policy registry key
         if ($PSCmdlet.ShouldProcess($TargetGpoName, "Set GP Registry: MinimumPasswordLength = $MinPassLength")) {
             Set-GPRegistryValue -Name $TargetGpoName `
                                 -Key "HKLM\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters" `
@@ -555,7 +621,7 @@ function Invoke-GPOConfiguration {
             Write-LogMessage -Message "GPO Policy Enforced: Minimum Password Length = $MinPassLength." -Level 'SUCCESS'
         }
 
-        # 5. Enforce Account Lockout Threshold
+        # Step 5: Enforce Account Lockout Threshold to mitigate offline / online dictionary brute-force
         if ($PSCmdlet.ShouldProcess($TargetGpoName, "Set GP Registry: MaximumPasswordAge & Lockout Policies")) {
             Set-GPRegistryValue -Name $TargetGpoName `
                                 -Key "HKLM\SOFTWARE\Policies\Microsoft\Windows\System" `
@@ -576,27 +642,34 @@ function Invoke-GPOConfiguration {
 # ==============================================================================
 # MAIN EXECUTION ROUTER
 # ==============================================================================
+# Directs workflow execution based on the chosen operational -Mode parameter
 Write-LogMessage -Message "Starting Sync-ADUsersAndGroups execution in mode: [$Mode]" -Level 'INFO'
 
 switch ($Mode) {
     'Export' {
+        # Export AD users and group memberships to CSV
         Invoke-ADIdentityExport -DestinationPath $CsvPath
     }
     'Import' {
+        # Import users, provision security groups, and assign roles from CSV
         Invoke-ADIdentityImport -SourceCsvPath $CsvPath -TargetDomain $DomainName -AccountPassword $DefaultPassword
     }
     'ProvisionRBAC' {
+        # Build departmental folder structure and apply icacls least-privilege permissions
         Invoke-NTFSHardening -BasePath $BaseSharePath -ProjectLeadUser $ConfidentialProjectLead
     }
     'HardenNTFS' {
+        # Alias mode to apply NTFS permissions and inheritance breaks
         Invoke-NTFSHardening -BasePath $BaseSharePath -ProjectLeadUser $ConfidentialProjectLead
     }
     'ConfigureGPO' {
+        # Create and link domain-level security baseline GPOs
         Invoke-GPOConfiguration -TargetGpoName $GpoName -TargetDomain $DomainName `
                                 -MinPassLength $MinimumPasswordLength -EnforceCAD $EnforceSecureLogonCAD `
                                 -LockoutThreshold $AccountLockoutThreshold
     }
     'All' {
+        # Full enterprise baseline orchestration: Import identities, harden shares, and configure GPO
         if (Test-Path $CsvPath) {
             Invoke-ADIdentityImport -SourceCsvPath $CsvPath -TargetDomain $DomainName -AccountPassword $DefaultPassword
         } else {
@@ -610,4 +683,5 @@ switch ($Mode) {
 }
 
 Write-LogMessage -Message "Sync-ADUsersAndGroups task finished." -Level 'SUCCESS'
+# Return execution audit object to caller
 return $executionReport
