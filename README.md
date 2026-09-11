@@ -2,6 +2,7 @@
 
 <div align="center">
 
+[![Live Website](https://img.shields.io/badge/Website-Live%20Portfolio-06b6d4?style=flat-square&logo=googlechrome&logoColor=white)](https://mohamedsharmarkesaid.github.io/cybersecurity-projects/)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Mohamed%20Said-0A66C2?style=flat-square&logo=linkedin)](https://www.linkedin.com/in/mohamed-sharmarke-661582338/)
 [![GitHub](https://img.shields.io/badge/GitHub-cybersecurity--projects-181717?style=flat-square&logo=github)](https://github.com/MohamedSharmarkeSaid/cybersecurity-projects)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](./LICENSE)
