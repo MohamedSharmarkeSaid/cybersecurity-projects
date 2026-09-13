@@ -93,7 +93,7 @@ cybersecurity-projects/
 
 * **LinkedIn**: [linkedin.com/in/mohamed-sharmarke-661582338](https://www.linkedin.com/in/mohamed-sharmarke-661582338/)
 * **GitHub**: [github.com/MohamedSharmarkeSaid/cybersecurity-projects](https://github.com/MohamedSharmarkeSaid/cybersecurity-projects)
-* **Location**: Borås / Gothenburg, Sweden (Open to on-site in Saudi Arabia, Hybrid & Remote)
+* **Location**: Borås / Gothenburg, Sweden (Open to Worldwide Remote, Hybrid & Relocation)
 
 ---
 
