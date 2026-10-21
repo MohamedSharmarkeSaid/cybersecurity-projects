@@ -1,138 +1,143 @@
-# Mohamed Said — Cybersecurity & Network Security Portfolio
+# Cybersecurity & Infrastructure Portfolio — Mohamed Said
 
-<div align="center">
+Hi! I'm **Mohamed Said**, an Information Systems graduate (B.Sc. in Informatics, University of Borås,
+2026) focusing on cybersecurity, network defense, and Windows/Linux infrastructure.
 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Mohamed%20Said-0A66C2?style=flat-square&logo=linkedin)](https://www.linkedin.com/in/mohamed-sharmarke-661582338/)
-[![GitHub](https://img.shields.io/badge/GitHub-cybersecurity--projects-181717?style=flat-square&logo=github)](https://github.com/MohamedSharmarkeSaid/cybersecurity-projects)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](./LICENSE)
+This repository collects **seven hands-on projects** from my degree and my own home lab: from
+reconstructing a DNS tunneling incident in Wireshark and testing local LLMs on vulnerability root
+cause analysis for my Bachelor's thesis, to hacking a smart home lab, automating Windows Server with
+PowerShell, building multi-site Cisco networks and OPNsense firewalls, pentesting a Ruby on Rails
+web app, and building Active Directory domains from scratch.
 
-**SOC Analyst • Network Security Engineer • Incident Response • Systems Automation**
+For each project, the `README.md` in its folder walks through **what I built or tested**, **how it
+worked step by step**, **what went wrong and how I solved it**, and **what I learned**, alongside
+the full Swedish lab reports (PDFs) and scripts.
 
-</div>
-
----
-
-## Executive Profile
-
-I am a **Cybersecurity and SOC Analyst** with a Bachelor of Science in Engineering (**Computer Engineering – IT Infrastructure & Cybersecurity**) from the **University of Borås**, Sweden.
-
-My background combines operational defensive security (**Security Operations Center, alert triage, incident response, packet forensics**) with enterprise infrastructure engineering (**Cisco routing/switching, UTM firewalls, Active Directory hardening**) and automation (**PowerShell, Infrastructure as Code**).
-
-> 💡 **Certifications & Credentials**: All active professional certifications and verified digital badges are maintained on my **[LinkedIn Profile](https://www.linkedin.com/in/mohamed-sharmarke-661582338/)**.
+**Contact:** [LinkedIn](https://www.linkedin.com/in/mohamed-said-757051218/) ·
+[GitHub (@MohamedSharmarkeSaid)](https://github.com/MohamedSharmarkeSaid) · [Email](mailto:mohamedsaid_99@outlook.com)
 
 ---
 
-## Technical Skill Matrix
+## Projects in this repository
 
-| Domain | Key Technologies & Methodologies |
-|:---|:---|
-| **SOC & Blue Team** | Alert Triage, Incident Response (NIST SP 800-61), SIEM Telemetry, MITRE ATT&CK, Suricata, Sigma Rules |
-| **Digital Forensics** | Packet Analysis (**Wireshark, tshark**), Network Forensics, Deobfuscation (**CyberChef**), C2 / DNS Tunneling Detection |
-| **Enterprise Networking** | Cisco IOS, OSPFv2, HSRP Gateway Redundancy, LACP, 802.1Q VLANs, GRE Tunnels, Extended ACLs, NAT/PAT |
-| **Perimeter Security** | **OPNsense UTM**, Inline IPS (Suricata / Netmap), Web Proxy & Antivirus (ClamAV/C-ICAP), DNSBL Filtering, OpenVPN |
-| **Systems & IaC** | **PowerShell 7 / 5.1**, Active Directory Domain Services, GPO Security Hardening, NTFS / `icacls`, Hyper-V Gen 2 IaC |
-| **AppSec & Penetration Testing** | **OWASP WSTG v4.2**, Burp Suite, SQLMap, XSStrike, Gobuster, Nikto, Vulnerability RCA, Local LLMs (LM Studio, Open WebUI) |
-
----
-
-## Project Directory
-
-Each project directory below provides a structured case study (**Objective → Methodology → Results**) along with the primary reports and script files:
-
-| # | Project | Domain | Key Findings & Results | Deliverables |
-|:---:|:---|:---|:---|:---:|
-| **01** | [**Network Forensics: DNS Tunneling Detection**](./01-network-forensics-dns-tunneling/) | DFIR / Threat Hunting | Reconstructed multi-stage APT intrusion; identified covert DNS exfiltration to `cutekittenzz.xyz`; recovered 3 flags via CyberChef; authored Sigma/Suricata detection rules. | [Report & Evidence](./01-network-forensics-dns-tunneling/) |
-| **02** | [**AI-Assisted Vulnerability Root Cause Analysis**](./02-llm-vulnerability-rca/) | AppSec / Local AI | Evaluated 4 local LLMs across 40 test runs on OWASP Juice Shop. Bounded context outperformed RAG (58.3% vs 31.7%). Uncovered vulnerability inversion risks in naive RAG. | [111-Page Thesis PDF](./02-llm-vulnerability-rca/) |
-| **03** | [**IoT Security Assessment & Penetration Testing**](./03-iot-security-assessment/) | IoT / Hardening | Cracked camera RTSP credentials in 78 seconds (CVSS 9.1); intercepted unauthorized AWS telemetry via Cisco SPAN; mitigated threat via 3-VLAN segmentation and ACLs. | [Report & SPAN Config](./03-iot-security-assessment/) |
-| **04** | [**PowerShell Infrastructure Automation & IaC**](./04-powershell-infrastructure-automation/) | Systems / Automation | Production-grade automation scripts for AD user/group provisioning, CIS GPO baselines, `icacls` permission hardening, DHCP deployment, and Gen 2 Hyper-V multi-disk arrays. | [PowerShell Scripts](./04-powershell-infrastructure-automation/) |
-| **05** | [**Enterprise Dual-Campus Network & UTM Firewall**](./05-enterprise-network-architecture/) | Network / Perimeter | Designed dual-campus network (HQ Borås & Branch Göteborg) with OSPF, GRE tunnels, and HSRP redundancy. Deployed OPNsense UTM firewall with inline IPS and proxy filtering. | [Network & UTM Guides](./05-enterprise-network-architecture/) |
-| **06** | [**Web Application Penetration Testing (OWASP WSTG)**](./06-web-application-penetration-testing/) | Web AppSec / Pentest | Executed OWASP WSTG evaluation against Decidim (Ruby on Rails/Puma) in Hyper-V sandbox. Identified stacktrace leakage & rate limiting gaps; validated ORM & template defenses. | [36-Page Pentest Report](./06-web-application-penetration-testing/) |
+| # | Project | What it covers | Key tools | Deliverables |
+|---|---|---|---|---|
+| **01** | [**Network Forensics & DNS Tunneling**](./01-network-forensics-dns-tunneling/) | Investigated a PCAP from a compromised Linux host ("Operation Kattastrofen"), found a polyglot JPEG/bash dropper, decrypted a 32-byte XOR + Base64 DNS tunneling stream (`cutekittenzz.xyz`), deobfuscated a JSFuck payload, and wrote Suricata/Sigma detection rules. | Wireshark, `tshark`, CyberChef, Suricata, Sigma | [Incident Report (PDF)](./01-network-forensics-dns-tunneling/Incident_Report_DNS_Tunneling_Exfiltration.pdf) |
+| **02** | [**Local LLMs for Vulnerability Root Cause Analysis (B.Sc. Thesis)**](./02-llm-vulnerability-rca/) | Tested 4 local LLMs (7B–14B) across 40 runs on OWASP Juice Shop pentest reports and source code, comparing direct file context (LM Studio, 58.3%) against full-repo RAG (Open WebUI + ChromaDB, 31.7%). | Ollama, LM Studio, Open WebUI, ChromaDB, OWASP Juice Shop | [B.Sc. Thesis — 111 pages (PDF)](./02-llm-vulnerability-rca/BSc_Thesis_LLM_Vulnerability_RCA.pdf) |
+| **03** | [**Smart Home & IoT Security Assessment**](./03-iot-security-assessment/) | Built a smart home lab with Home Assistant, set up Cisco SPAN port mirroring, cracked a Reolink camera's RTSP stream in 78 seconds with Hydra, caught the camera sending UDP packets to AWS in Paris, and designed a 3-VLAN segmentation fix. | Kali Linux, Nmap, Wireshark, Cisco IOS (`SPAN`), THC-Hydra, `ffplay` | [IoT Security Report (PDF)](./03-iot-security-assessment/IoT_Security_Assessment_Report.pdf) |
+| **04** | [**PowerShell Infrastructure & Security Automation**](./04-powershell-infrastructure-automation/) | Wrote three reusable PowerShell scripts to automate DHCP deployment & AD authorization, CSV user/group migration + `icacls` NTFS permissions + GPO baselines, and Gen 2 Hyper-V VMs with 6-disk SCSI SQL storage arrays. | PowerShell 5.1+, `ActiveDirectory`, `DhcpServer`, `Hyper-V`, `icacls` | [`Invoke-DHCPDeployment.ps1`](./04-powershell-infrastructure-automation/Invoke-DHCPDeployment.ps1) · [`Sync-ADUsersAndGroups.ps1`](./04-powershell-infrastructure-automation/Sync-ADUsersAndGroups.ps1) · [`Deploy-HyperV-VM.ps1`](./04-powershell-infrastructure-automation/Deploy-HyperV-VM.ps1) · [Lab Guide (PDF)](./04-powershell-infrastructure-automation/HyperV_VM_Automation_Lab_Guide.pdf) |
+| **05** | [**Enterprise Network Architecture & OPNsense UTM Firewall**](./05-enterprise-network-architecture/) | Part 1: Designed a dual-site school network (Borås & Göteborg) with VLSM, LACP, Rapid PVST+, HSRPv2 with WAN tracking, GRE tunnels, OSPFv2, and Extended ACLs. Part 2: Built an OPNsense UTM firewall with Suricata IPS, ClamAV proxy, DNSBL filtering, and OpenVPN. | Cisco IOS, Packet Tracer, OPNsense, Suricata, Squid + ClamAV, OpenVPN | [Multi-Site Network Design (PDF)](./05-enterprise-network-architecture/MultiSite_Enterprise_Network_Design.pdf) · [OPNsense UTM Report (PDF)](./05-enterprise-network-architecture/OPNsense_UTM_Firewall_Implementation.pdf) |
+| **06** | [**Web Application Penetration Testing (OWASP WSTG)**](./06-web-application-penetration-testing/) | Built an isolated Hyper-V Private Switch lab and tested the **Decidim** platform (Ruby on Rails / Puma 6.5.0) against OWASP WSTG v4.2, finding stack trace disclosure, missing login rate limiting, and cleartext HTTP, while verifying Rails' XSS and SQLi defenses. | Kali Linux, Nmap, Nikto, Gobuster, Burp Suite, SQLMap, XSStrike | [Pentest Report — 36 pages (PDF)](./06-web-application-penetration-testing/Web_Application_Penetration_Testing_Report.pdf) |
+| **07** | [**Active Directory Home Lab & School Infrastructure Project**](./07-active-directory-lab/) | Part 1: Solo AD home lab (`lab.internal`, Windows Server 2025 & Windows 11) built for deliberate practice—DNS SRV records, OUs, `redircmp`, least-privilege delegation, and GPO troubleshooting. Part 2: 15-machine school branch environment (`fjunne.local`) with dual DCs, Cisco NAT, 4-node SQL AlwaysOn cluster, WDS, DHCP, and Linux Apache. | Hyper-V, Windows Server 2025 & 2019, AD DS, DNS, GPMC, SQL Server, WDS, Cisco IOS | [Solo Lab Journal](./07-active-directory-lab/docs/lab-journal.md) · [School Project Walkthrough](./07-active-directory-lab/school-project-fjunne.md) · [School Report — 59 pages (PDF)](./07-active-directory-lab/Serversystem%20och%20Infrastruktur.pdf) |
 
 ---
 
-## Repository Structure
+## Short overview of each project
+
+### 1. [Network Forensics & DNS Tunneling ("Operation Kattastrofen")](./01-network-forensics-dns-tunneling/)
+Investigated `kattastrofen.pcap` after an employee downloaded cat pictures over HTTP. I extracted a
+polyglot bash dropper from the end of `kitten-3.jpg`, found its 32-byte XOR key, reassembled the
+hex-encoded DNS queries sent to `cutekittenzz.xyz` via the internal DNS resolver (`10.0.0.20`), and
+recovered the stolen `topphemligt.pdf` file in CyberChef. Then I deobfuscated an embedded JSFuck
+script (bypassing a `0.1 + 0.2 == 0.3` IEEE 754 floating-point trap) and wrote Suricata and Sigma
+rules to detect DNS tunneling.
+
+### 2. [Can Local LLMs Find and Fix Security Bugs from Pentest Reports? (B.Sc. Thesis)](./02-llm-vulnerability-rca/)
+Together with Aiman Ibrahim Belhadj and Brian Muhirwa, I tested four local open-weight LLMs
+(`Ministral 3 14B Reasoning`, `Qwen 3.5-9B`, `qwen2.5-coder:14b`, and `qwen2.5-coder:7b`) on consumer
+hardware (Ryzen 5 7600, 32 GB RAM) across five vulnerabilities in **OWASP Juice Shop**. We found
+that giving a model the relevant source file directly in LM Studio scored **58.3% (70/120)**, while
+indexing all 955 files into a naive text-chunking RAG pipeline in Open WebUI dropped accuracy to
+**31.7% (38/120)**—and when a human pentest report misclassified a DOM-XSS bug as Reflected XSS
+(TC3), every single model scored **0/6** because none of them questioned the report's label.
+
+### 3. [Smart Home & IoT Security Assessment](./03-iot-security-assessment/)
+Set up a smart home lab with Home Assistant OS on a Raspberry Pi 4, a Reolink IP camera, Shelly
+sensors, and Nedis/Tuya smart plugs. After configuring **Cisco SPAN port mirroring** on the switch
+so Wireshark on Kali could see unicast traffic to the camera, we cracked the camera's RTSP stream
+(`554/tcp`) in **78 seconds** with THC-Hydra (`1,928` attempts) and spotted it sending constant UDP
+packets (`58200/udp`) to an AWS EC2 server in Paris (`15.236.144.249`). We finished by designing a
+3-VLAN segmentation plan (`MGMT_CORE`, `IOT_UNTRUSTED`, `USER_GUEST`) and firewall rules.
+
+### 4. [PowerShell Infrastructure & Security Automation](./04-powershell-infrastructure-automation/)
+Three PowerShell scripts built from our Windows Server and Active Directory labs:
+- **`Invoke-DHCPDeployment.ps1`**: Installs DHCP, authorizes the server in AD (`Add-DhcpServerInDC`),
+  sets up the scope, exclusions, router/DNS options, and MAC reservations, and clears the Server
+  Manager registry warning flag.
+- **`Sync-ADUsersAndGroups.ps1`**: Exports and imports AD users and their group memberships via CSV,
+  creates departmental folders and locks down NTFS permissions with `icacls` (`(OI)(CI)M` vs.
+  `(OI)(CI)F`), and sets GPO security registry keys (`DisableCAD = 0`).
+- **`Deploy-HyperV-VM.ps1`**: Builds Generation 2 UEFI VMs with Secure Boot and attaches a 6-disk
+  SCSI storage array formatted with 64 KB NTFS clusters for SQL Server.
+
+### 5. [Enterprise Network Architecture & OPNsense UTM Firewall](./05-enterprise-network-architecture/)
+Two networking projects in one folder:
+- **Part 1 (Cisco Multi-Site Design):** Designed a two-campus school network (Borås `10.0.0.0/16` &
+  Göteborg `172.16.0.0/16`) with VLSM subnetting for 2,500+ students, LACP port-channels, Rapid
+  PVST+, HSRPv2 with WAN link tracking, dual-ISP GRE tunnels with OSPFv2 cost tuning (`10` vs.
+  `100`), and Extended ACLs isolating the student VLANs.
+- **Part 2 (OPNsense UTM Firewall):** Built a small-business UTM firewall on a dual-NIC PC using
+  OPNsense with stateful `pf` rules, inline Suricata IPS (`ET Open`), Squid + C-ICAP + ClamAV
+  antivirus, Unbound DNSBL content filtering (blocking `bt.com`, `bet365.com`, and `facebook.com`
+  over both HTTP and HTTPS), and OpenVPN with a local CA.
+
+### 6. [Web Application Penetration Testing (OWASP WSTG — Decidim)](./06-web-application-penetration-testing/)
+Built a two-VM lab on a Hyper-V **Private Virtual Switch** (`192.168.50.0/24`) and tested **Decidim**
+(`Ruby on Rails` / `Puma 6.5.0`) from Kali Linux using the OWASP WSTG v4.2 checklist. I found three
+Medium-severity deployment/configuration flaws—a full stack trace leak on malformed HTTP requests
+(`GET / GOLD ERROR/1.0`), missing login rate limiting in Burp Intruder, and cleartext HTTP credentials—and
+verified why Rails' built-in CSRF tokens, `HttpOnly`/`SameSite` cookies, ERB HTML auto-escaping, and
+ActiveRecord parameterized queries stopped XSStrike and SQLMap.
+
+### 7. [Active Directory Lab (`lab.internal` & `fjunne.local`)](./07-active-directory-lab/)
+Documents both my solo Active Directory home lab (`lab.internal` on Windows Server 2025 and Windows
+11, built to practice DNS SRV records, OUs, `redircmp`, password-reset delegation, and GPO
+troubleshooting) and our 15-machine school branch project (`fjunne.local` on Windows Server 2019,
+with two domain controllers, Cisco NAT & port forwarding, Folder Redirection, Roaming Profiles, a
+4-node SQL Server Failover Cluster with AlwaysOn Availability Groups, PowerShell DHCP, WDS PXE boot,
+and an Ubuntu Apache web server).
+
+---
+
+## Repository structure
 
 ```text
-cybersecurity-projects/
-├── README.md                                  # Portfolio landing page and executive summary
-├── LICENSE                                    # MIT License
-├── .gitignore                                 # Git ignore configuration
+cybersecurity-portfolio/
+├── README.md
 │
-├── 01-network-forensics-dns-tunneling/        # Module 01: PCAP analysis, CyberChef, Sigma rules
-│   ├── README.md                              # Case study & detection playbook
-│   └── Incident_Report_DNS_Tunneling_Exfiltration.pdf # Primary forensic investigation report
+├── 01-network-forensics-dns-tunneling/
+│   ├── README.md
+│   └── Incident_Report_DNS_Tunneling_Exfiltration.pdf
 │
-├── 02-llm-vulnerability-rca/                  # Module 02: B.Sc. Engineering Thesis
-│   ├── README.md                              # Benchmark summary, results & AppSec guidelines
-│   └── BSc_Thesis_LLM_Vulnerability_RCA.pdf   # Complete 111-page thesis research paper
+├── 02-llm-vulnerability-rca/
+│   ├── README.md
+│   └── BSc_Thesis_LLM_Vulnerability_RCA.pdf
 │
-├── 03-iot-security-assessment/                # Module 03: Home Assistant pentest & hardening
-│   ├── README.md                              # Vulnerability findings, SPAN mirroring & VLAN design
-│   └── IoT_Security_Assessment_Report.pdf     # Hardware assessment & remediation report
+├── 03-iot-security-assessment/
+│   ├── README.md
+│   └── IoT_Security_Assessment_Report.pdf
 │
-├── 04-powershell-infrastructure-automation/   # Module 04: Production PowerShell IaC scripts
-│   ├── README.md                              # Script documentation & parameter guides
-│   ├── Invoke-DHCPDeployment.ps1              # Automated Windows Server DHCP provisioning
-│   ├── Sync-ADUsersAndGroups.ps1              # CSV identity sync, GPO baselines, icacls hardening
-│   ├── Deploy-HyperV-VM.ps1                   # Gen 2 Hyper-V VM IaC & 6-disk database array
-│   └── HyperV_VM_Automation_Lab_Guide.pdf     # Infrastructure implementation reference
+├── 04-powershell-infrastructure-automation/
+│   ├── README.md
+│   ├── Invoke-DHCPDeployment.ps1
+│   ├── Sync-ADUsersAndGroups.ps1
+│   ├── Deploy-HyperV-VM.ps1
+│   └── HyperV_VM_Automation_Lab_Guide.pdf
 │
-├── 05-enterprise-network-architecture/        # Module 05: Cisco campus & OPNsense UTM
-│   ├── README.md                              # Dual-campus routing, switching & UTM blueprint
-│   ├── MultiSite_Enterprise_Network_Design.pdf # Enterprise network engineering design
-│   └── OPNsense_UTM_Firewall_Implementation.pdf # Hardware UTM setup & threat management
+├── 05-enterprise-network-architecture/
+│   ├── README.md
+│   ├── MultiSite_Enterprise_Network_Design.pdf
+│   └── OPNsense_UTM_Firewall_Implementation.pdf
 │
-└── 06-web-application-penetration-testing/    # Module 06: OWASP WSTG web penetration testing
-    ├── README.md                              # Assessment summary, methodology & test matrix
-    └── Web_Application_Penetration_Testing_Report.pdf # Complete 36-page penetration test report
+├── 06-web-application-penetration-testing/
+│   ├── README.md
+│   └── Web_Application_Penetration_Testing_Report.pdf
+│
+└── 07-active-directory-lab/
+    ├── README.md
+    ├── school-project-fjunne.md
+    ├── Serversystem och Infrastruktur.pdf
+    └── docs/
+        ├── lab-journal.md
+        └── screenshots/
 ```
-
----
-
-## Contact & Connect
-
-* **LinkedIn**: [linkedin.com/in/mohamed-sharmarke-661582338](https://www.linkedin.com/in/mohamed-sharmarke-661582338/)
-* **GitHub**: [github.com/MohamedSharmarkeSaid/cybersecurity-projects](https://github.com/MohamedSharmarkeSaid/cybersecurity-projects)
-* **Location**: Borås / Gothenburg, Sweden (Open to Hybrid & Remote)
-
----
-
-## Standards & Methodologies Followed
-
-All implementations, reports, and codebases in this repository adhere to globally recognized industry cybersecurity, networking, and governance standards:
-
-* **Incident Response & Digital Forensics**: NIST SP 800-61 Rev. 2 (*Computer Security Incident Handling Guide*), MITRE ATT&CK Enterprise Framework, SANS Incident Handler's Handbook.
-* **Penetration Testing & Security Assessment**: OWASP Internet of Things Top 10, NIST SP 800-115 (*Technical Guide to Information Security Testing and Assessment*), NIST SP 800-213 (*IoT Device Cybersecurity Guidance*), PTES (Penetration Testing Execution Standard).
-* **Application Security & Vulnerability Analysis**: OWASP Top 10 (2021), OWASP Web Security Testing Guide (WSTG v4.2), Common Weakness Enumeration (CWE/SANS Top 25).
-* **Enterprise Networking**: IEEE 802.1Q (VLAN Trunking), IEEE 802.3ad (LACP), IEEE 802.1w (Rapid Spanning Tree), RFC 2328 (OSPFv2), RFC 2784 (GRE), RFC 2281 (HSRP), RFC 1918 (Private Address Allocation).
-* **Systems Hardening & Governance**: CIS Microsoft Windows Server Benchmarks, Principle of Least Privilege (PoLP), Zero Trust Architecture (NIST SP 800-207).
-
----
-
-## Recruiter & Professional Connect
-
-I am actively open to discussing roles in:
-* **Security Operations Center (SOC) Analyst (L1 / L2)**
-* **Network Security Engineer / Infrastructure Security Specialist**
-* **Incident Response & Threat Hunting Analyst**
-* **Application Security / DevSecOps Engineer**
-
-| Parameter | Details |
-|:---|:---|
-| **Name** | Mohamed Said (Mohamed Sharmarke Said) |
-| **Location** | Sweden (Borås / Gothenburg / Open to Hybrid & Remote) |
-| **Degree** | B.Sc. in Computer Engineering, University of Borås (2026) |
-| **Target Roles** | SOC Analyst, Network Security Engineer, DFIR, AppSec |
-| **Languages** | Swedish (Native / Fluent) &bull; English (Full Professional Proficiency) |
-| **Availability** | Full-time / Immediate availability |
-| **Certifications** | Verified credentials & digital badges maintained on [LinkedIn](https://www.linkedin.com/in/mohamed-sharmarke-661582338/) |
-
-* **GitHub**: [github.com/MohamedSharmarkeSaid/cybersecurity-projects](https://github.com/MohamedSharmarkeSaid/cybersecurity-projects)
-* **LinkedIn**: [linkedin.com/in/mohamed-sharmarke-661582338](https://www.linkedin.com/in/mohamed-sharmarke-661582338/)
-* **Direct Inquiries**: Professional contact details and formal references available upon request.
-
----
-
-<div align="center">
-  <small>© 2026 Mohamed Said. Released under the <a href="./LICENSE">MIT License</a>. Engineered with precision.</small>
-</div>
