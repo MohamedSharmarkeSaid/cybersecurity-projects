@@ -13,7 +13,7 @@ For each project, the `README.md` in its folder walks through **what I built or 
 worked step by step**, **what went wrong and how I solved it**, and **what I learned**, alongside
 the full Swedish lab reports (PDFs) and scripts.
 
-**Contact:** [LinkedIn](https://www.linkedin.com/in/mohamed-said-757051218/) ·
+**Contact:** [LinkedIn](https://www.linkedin.com/in/mohamed-sharmarke-661582338/) ·
 [GitHub (@MohamedSharmarkeSaid)](https://github.com/MohamedSharmarkeSaid) · [Email](mailto:mohamedsaid_99@outlook.com)
 
 ---
