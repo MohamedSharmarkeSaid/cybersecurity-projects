@@ -14,7 +14,7 @@ worked step by step**, **what went wrong and how I solved it**, and **what I lea
 the full Swedish lab reports (PDFs) and scripts.
 
 **Contact:** [LinkedIn](https://www.linkedin.com/in/mohamed-sharmarke-661582338/) ·
-[GitHub (@MohamedSharmarkeSaid)](https://github.com/MohamedSharmarkeSaid) · [Email](mailto:mohamedsaid_99@outlook.com)
+[GitHub (@MohamedSharmarkeSaid)](https://github.com/MohamedSharmarkeSaid) · [Email](mailto:mohamed.sharmarke.said@hotmail.com)
 
 ---
 
